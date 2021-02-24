@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class RegisterViewController: UIViewController {
     
@@ -17,7 +18,7 @@ class RegisterViewController: UIViewController {
     
     private let imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "person")
+        imageView.image = UIImage(systemName: "person.circle")
         imageView.tintColor = .gray
         imageView.contentMode = .scaleAspectFit
         imageView.layer.masksToBounds = true
@@ -153,7 +154,7 @@ class RegisterViewController: UIViewController {
         guard let firstName = firstNameField.text,
               let lastName = lastNameField.text,
               let email = emailField.text,
-              let password = passwordField.text, 
+              let password = passwordField.text,
               !firstName.isEmpty,
               !lastName.isEmpty,
               !email.isEmpty,
@@ -164,11 +165,30 @@ class RegisterViewController: UIViewController {
         }
         
         // Firebase Login
-        
+        DatabaseManager.shared.userExistsWithEmail(with: email, completion: {[weak self] exists in
+            guard let strongSelf = self else {
+                return
+            }
+            guard !exists else{
+                self?.altertUserLoginError(message: "Email id already in use")
+                return
+            }
+            
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: {authResult, error in
+                guard authResult != nil, error == nil else{
+                    print("Error creating user")
+                    return
+                }
+                
+                DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
+                
+                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+            })
+        })
     }
     
-    func altertUserLoginError(){
-        let alert = UIAlertController(title: "Woops", message: "Please enter all information to login", preferredStyle: .alert)
+    func altertUserLoginError(message : String = "Please enter all information to login"){
+        let alert = UIAlertController(title: "Woops", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
         present(alert, animated: true)
     }
@@ -196,7 +216,7 @@ extension RegisterViewController: UITextFieldDelegate{
 }
 
 extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate{
-
+    
     func presentPhotoActionSheet(){
         let actionSheet = UIAlertController(title: "Profile Picture", message: "How would you like to select a picture", preferredStyle: .actionSheet)
         actionSheet.addAction(UIAlertAction(title: "Cancel",
