@@ -7,8 +7,11 @@
 
 import UIKit
 import FirebaseAuth
+import JGProgressHUD
 
 class RegisterViewController: UIViewController {
+    
+    private let spinner = JGProgressHUD(style: .dark)
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -93,7 +96,7 @@ class RegisterViewController: UIViewController {
     private let signUpButton: UIButton = {
         let button = UIButton()
         button.setTitle("Sign Up", for: .normal)
-        button.backgroundColor = .link
+        button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
         button.layer.masksToBounds = true
@@ -164,23 +167,51 @@ class RegisterViewController: UIViewController {
             return
         }
         
+        spinner.show(in: view)
+        
         // Firebase Login
-        DatabaseManager.shared.userExistsWithEmail(with: email, completion: {[weak self] exists in
+        DatabaseManager.shared.userExists(with: email, completion: {[weak self] exists in
+            
+            print(exists)
             guard let strongSelf = self else {
                 return
             }
+            
+            DispatchQueue.main.async {
+                strongSelf.spinner.dismiss()
+            }
             guard !exists else{
-                self?.altertUserLoginError(message: "Email id already in use")
+                strongSelf.altertUserLoginError(message: "Email id already in use")
                 return
             }
             
             FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: {authResult, error in
                 guard authResult != nil, error == nil else{
-                    print("Error creating user")
+                    strongSelf.altertUserLoginError(message: "Cannot create user")
                     return
                 }
                 
-                DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email))
+                let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
+                
+                DatabaseManager.shared.insertUser(with: chatUser, completion: {success in
+                    if success{
+                        //upload image
+                        guard let image = strongSelf.imageView.image,
+                              let data = image.pngData() else{
+                            return
+                        }
+                        let fileName = chatUser.profilePictureFileName
+                        StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { result in
+                            switch result {
+                            case .success(let downloadURL):
+                                UserDefaults.standard.set(downloadURL, forKey: "profile_picture_url")
+                                print(downloadURL)
+                            case .failure(let error):
+                                print(error)
+                            }
+                        })
+                    }
+                })
                 
                 strongSelf.navigationController?.dismiss(animated: true, completion: nil)
             })

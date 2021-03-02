@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		80EB2FCD6B4BFA7A819472EF /* Pods_Messenger_2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 227DC26404278C54BBB0A8F2 /* Pods_Messenger_2.framework */; };
+		F91C379625E7A88F0073A3AB /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F91C379525E7A88F0073A3AB /* ChatViewController.swift */; };
+		F91C37CE25E8F4890073A3AB /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F91C37CD25E8F4880073A3AB /* StorageManager.swift */; };
 		F97B5F5625E3D50600AB559F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F97B5F5525E3D50600AB559F /* AppDelegate.swift */; };
 		F97B5F5825E3D50600AB559F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F97B5F5725E3D50600AB559F /* SceneDelegate.swift */; };
 		F97B5F5A25E3D50600AB559F /* ConversationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F97B5F5925E3D50600AB559F /* ConversationsViewController.swift */; };
@@ -29,6 +31,8 @@
 		227DC26404278C54BBB0A8F2 /* Pods_Messenger_2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Messenger_2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		342A5A827F492AF363C921A3 /* Pods-Messenger_2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Messenger_2.release.xcconfig"; path = "Target Support Files/Pods-Messenger_2/Pods-Messenger_2.release.xcconfig"; sourceTree = "<group>"; };
 		F3AC604E782B0041FCAAE6EF /* Pods-Messenger_2.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Messenger_2.debug.xcconfig"; path = "Target Support Files/Pods-Messenger_2/Pods-Messenger_2.debug.xcconfig"; sourceTree = "<group>"; };
+		F91C379525E7A88F0073A3AB /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		F91C37CD25E8F4880073A3AB /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
 		F97B5F5225E3D50600AB559F /* Messenger_2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Messenger_2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F97B5F5525E3D50600AB559F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F97B5F5725E3D50600AB559F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -132,6 +136,7 @@
 				F97B5F7D25E3D7AF00AB559F /* VideoPlayerViewController.swift */,
 				F97B5F7A25E3D7A800AB559F /* PhotoViewerViewController.swift */,
 				F97B5F7825E3D77D00AB559F /* Login */,
+				F91C379525E7A88F0073A3AB /* ChatViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -143,6 +148,7 @@
 				F97B5F5725E3D50600AB559F /* SceneDelegate.swift */,
 				F97B5F8625E3DE5600AB559F /* Extensions.swift */,
 				F9A7C0F325E64181005D7AEE /* DatabaseManager.swift */,
+				F91C37CD25E8F4880073A3AB /* StorageManager.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -186,6 +192,7 @@
 				F97B5F4F25E3D50600AB559F /* Frameworks */,
 				F97B5F5025E3D50600AB559F /* Resources */,
 				0D13E3ABA40777972F477C3F /* [CP] Embed Pods Frameworks */,
+				9995FC312041D069D70149F0 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -282,6 +289,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		9995FC312041D069D70149F0 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Messenger_2/Pods-Messenger_2-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Messenger_2/Pods-Messenger_2-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Messenger_2/Pods-Messenger_2-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -299,7 +323,9 @@
 				F97B5F5625E3D50600AB559F /* AppDelegate.swift in Sources */,
 				F97B5F8425E3D7DE00AB559F /* ProfileViewController.swift in Sources */,
 				F97B5F5825E3D50600AB559F /* SceneDelegate.swift in Sources */,
+				F91C379625E7A88F0073A3AB /* ChatViewController.swift in Sources */,
 				F97B5F7B25E3D7A800AB559F /* PhotoViewerViewController.swift in Sources */,
+				F91C37CE25E8F4890073A3AB /* StorageManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

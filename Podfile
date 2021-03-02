@@ -8,5 +8,14 @@ pod 'Firebase/Analytics', '~> 6.33.0'
 pod 'Firebase/Core'
 pod 'Firebase/Auth'
 pod 'Firebase/Database'
+pod 'Firebase/Storage'
+
+#Google
+pod 'GoogleSignIn'
+
+pod 'MessageKit'
+pod 'JGProgressHUD'
+pod 'RealmSwift', '~> 5.0.2'
+pod 'SDWebImage'
 
 end
