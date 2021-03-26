@@ -164,13 +164,14 @@ class RegisterViewController: UIViewController {
               !password.isEmpty,
               password.count >= 6
         else{
+            altertUserLoginError()
             return
         }
         
         spinner.show(in: view)
         
         // Firebase Login
-        DatabaseManager.shared.userExists(with: email, completion: {[weak self] exists in
+        DatabaseManager.shared.userExists(with: email, completion: { [weak self] exists in
             
             print(exists)
             guard let strongSelf = self else {
@@ -191,6 +192,9 @@ class RegisterViewController: UIViewController {
                     return
                 }
                 
+                UserDefaults.standard.setValue(email, forKey: "email")
+                UserDefaults.standard.setValue("\(firstName) \(lastName)", forKey: "name")
+                
                 let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
                 
                 DatabaseManager.shared.insertUser(with: chatUser, completion: {success in
@@ -207,7 +211,7 @@ class RegisterViewController: UIViewController {
                                 UserDefaults.standard.set(downloadURL, forKey: "profile_picture_url")
                                 print(downloadURL)
                             case .failure(let error):
-                                print(error)
+                                print("Storage manager error : \(error)")
                             }
                         })
                     }
@@ -249,19 +253,21 @@ extension RegisterViewController: UITextFieldDelegate{
 extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate{
     
     func presentPhotoActionSheet(){
-        let actionSheet = UIAlertController(title: "Profile Picture", message: "How would you like to select a picture", preferredStyle: .actionSheet)
+        let actionSheet = UIAlertController(title: "Profile Picture",
+                                            message: "How would you like to select a picture",
+                                            preferredStyle: .actionSheet)
         actionSheet.addAction(UIAlertAction(title: "Cancel",
                                             style: .cancel,
                                             handler: nil))
         actionSheet.addAction(UIAlertAction(title: "Take Photo",
                                             style: .default,
-                                            handler: { [weak self] _ in self?.presentGallery()
-                                                
+                                            handler: { [weak self] _ in
+                                                self?.presentCamera()
                                             }))
         actionSheet.addAction(UIAlertAction(title: "Choose Photo",
                                             style: .default,
-                                            handler: { [weak self] _ in self?.presentGallery()
-                                                
+                                            handler: { [weak self] _ in
+                                                self?.presentPhotoPicker()
                                             }))
         present(actionSheet, animated: true)
     }
@@ -274,7 +280,7 @@ extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationC
         present(vc, animated: true)
     }
     
-    func presentGallery(){
+    func presentPhotoPicker(){
         let vc = UIImagePickerController()
         vc.sourceType = .photoLibrary
         vc.delegate = self

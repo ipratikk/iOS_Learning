@@ -87,7 +87,7 @@ class LoginViewController: UIViewController {
         GIDSignIn.sharedInstance()?.presentingViewController = self
         
         title = "Log In"
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Sign Up", style: .done, target: self, action: #selector(didTapRegister))
@@ -138,7 +138,7 @@ class LoginViewController: UIViewController {
         spinner.show(in: view)
         
         // Firebase Login
-        FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: {[weak self] authResult, error in
+        FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: { [weak self] authResult, error in
             guard let strongSelf = self else{
                 return
             }
@@ -172,6 +172,7 @@ class LoginViewController: UIViewController {
             UserDefaults.standard.set(email, forKey: "email")
             
             print("Logged In User: \(user)")
+//            strongSelf.altertUserLoginSuccess()
             strongSelf.navigationController?.dismiss(animated: true, completion: nil)
         })
     }

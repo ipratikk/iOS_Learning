@@ -33,6 +33,23 @@ class ConversationTableViewCell: UITableViewCell {
         return label
     }()
     
+    private let userUnreadCountLabel : UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize : 21, weight : .semibold)
+        return label
+    }()
+    
+    private let attachmentLabel : NSMutableAttributedString = {
+        let iconsSize = CGRect(x: 0, y: -5, width: 20, height: 20)
+        let photoAttachment = NSTextAttachment()
+        photoAttachment.image = UIImage(systemName: "photo")
+        photoAttachment.bounds = iconsSize
+        let att_string = NSMutableAttributedString()
+        att_string.append(NSAttributedString(attachment: photoAttachment))
+        att_string.append(NSAttributedString(string: " Photo Message"))
+        return att_string
+    }()
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.addSubview(userImageView)
@@ -63,7 +80,12 @@ class ConversationTableViewCell: UITableViewCell {
     }
     
     public func configure(with model : Conversation){
-        self.userMessageLabel.text = model.latestMessage.text
+        if model.latestMessage.text.contains("png") {
+            self.userMessageLabel.attributedText = attachmentLabel
+        }else{
+            self.userMessageLabel.text = model.latestMessage.text
+        }
+        
         self.userNameLabel.text = model.name
         
         let path = "images/\(model.otherUserEmail)_profile_picture.png"

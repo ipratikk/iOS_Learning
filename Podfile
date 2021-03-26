@@ -18,4 +18,8 @@ pod 'JGProgressHUD'
 pod 'RealmSwift', '~> 5.0.2'
 pod 'SDWebImage'
 
+
+pod "RxSwift"
+pod "RxCocoa"
+ 
 end
