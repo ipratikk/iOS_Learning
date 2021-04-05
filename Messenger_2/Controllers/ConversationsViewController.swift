@@ -9,12 +9,14 @@ import UIKit
 import FirebaseAuth
 import JGProgressHUD
 
-class ConversationsViewController: UIViewController{
+final class ConversationsViewController: UIViewController{
     
     private let spinner = JGProgressHUD(style : .dark)
     
     private var conversations = [Conversation]()
     
+    private let chatsService : ChatsViewService = ChatViewController(with: "", id: "")
+        
     private let tableView: UITableView = {
         let table = UITableView()
         table.isHidden = true
@@ -101,11 +103,7 @@ class ConversationsViewController: UIViewController{
             if let targetConversation = currentConversations.first(where: {
                 $0.otherUserEmail == DatabaseManager.safeEmail(emailAddress: result.email)
             }) {
-                let vc = ChatViewController(with: targetConversation.otherUserEmail, id: targetConversation.id)
-                vc.isNewConversation = false
-                vc.title = targetConversation.name
-                vc.navigationItem.largeTitleDisplayMode = .never
-                strongSelf.navigationController?.pushViewController(vc, animated: true)
+                strongSelf.setupChatView(email: targetConversation.otherUserEmail, id: targetConversation.id, isNewConversation: false, name: targetConversation.name)
             }
             else {
                 strongSelf.createNewConversation(result: result)
@@ -128,19 +126,22 @@ class ConversationsViewController: UIViewController{
             }
             switch result {
             case .success(let conversationId):
-                let vc = ChatViewController(with: email, id: conversationId)
-                vc.isNewConversation = false
-                vc.title = name
-                vc.navigationItem.largeTitleDisplayMode = .never
-                strongSelf.navigationController?.pushViewController(vc, animated: true)
+                strongSelf.setupChatView(email: email, id: conversationId, isNewConversation: false, name: name)
             case .failure(_):
-                let vc = ChatViewController(with: email, id: nil)
-                vc.isNewConversation = true
-                vc.title = name
-                vc.navigationItem.largeTitleDisplayMode = .never
-                strongSelf.navigationController?.pushViewController(vc, animated: true)
+                strongSelf.setupChatView(email: email, id: nil, isNewConversation: true, name: name)
             }
         })
+    }
+    
+    func setupChatView(email : String, id : String?, isNewConversation : Bool, name : String){
+        let vc = self.chatsService
+        vc.otherUserEmail = email
+        vc.conversationID = id
+        vc.isNewConversation = isNewConversation
+        vc.title = name
+        vc.navigationItem.largeTitleDisplayMode = .never
+        print("ChatService debugging")
+        self.navigationController?.pushViewController(vc, animated: true)
     }
     
     override func viewDidLayoutSubviews() {

@@ -10,7 +10,14 @@ import MessageKit
 import InputBarAccessoryView
 import SDWebImage
 
-class ChatViewController: MessagesViewController {
+protocol ChatsViewService : UIViewController {
+    var isNewConversation : Bool { get set }
+    var otherUserEmail : String { get set }
+    var conversationID : String? { get set }
+    func listenForMessages(id : String, shouldScrollToBottom : Bool)
+}
+
+class ChatViewController: MessagesViewController, ChatsViewService {
     
     public static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -21,11 +28,15 @@ class ChatViewController: MessagesViewController {
     }()
     
     public var isNewConversation = false
-    public let otherUserEmail: String
-    
-    private var conversationID: String?
-    
+    public var otherUserEmail: String
+    internal var conversationID: String?
     private var messages = [Message]()
+    
+    init(with email: String, id : String?) {
+        self.conversationID = id
+        self.otherUserEmail = email
+        super.init(nibName: nil, bundle: nil)
+    }
     
     private var selfSender: Sender? {
         guard let email = UserDefaults.standard.value(forKey: "email") as? String else{
@@ -35,15 +46,6 @@ class ChatViewController: MessagesViewController {
         return Sender(photoURL: "",
                       senderId: safeEmail,
                       displayName: "Me")
-    }
-    
-    init(with email: String, id : String?) {
-        self.conversationID = id
-        self.otherUserEmail = email
-        super.init(nibName: nil, bundle: nil)
-        //        if let conversationID = conversationID {
-        //            listenForMessages(id: conversationID)
-        //        }
     }
     
     required init?(coder: NSCoder) {
@@ -110,7 +112,7 @@ class ChatViewController: MessagesViewController {
         
     }
     
-    private func listenForMessages(id : String, shouldScrollToBottom : Bool){
+    internal func listenForMessages(id : String, shouldScrollToBottom : Bool){
         DatabaseManager.shared.getAllMessagesForConversation(with: id, completion: { [weak self] result in
             switch result{
             case .success(let messages):

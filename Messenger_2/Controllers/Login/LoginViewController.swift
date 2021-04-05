@@ -11,7 +11,16 @@ import GoogleSignIn
 import JGProgressHUD
 
 
-class LoginViewController: UIViewController {
+protocol LoginService {
+    var loginStatus : Bool { get set }
+    func login(email : String, password : String)
+    func altertUserLoginSuccess()
+    func altertUserLoginError()
+}
+
+class LoginViewController: UIViewController, LoginService {
+    
+    var loginStatus: Bool = false
     
     private let spinner = JGProgressHUD(style: .dark)
     
@@ -138,6 +147,14 @@ class LoginViewController: UIViewController {
         spinner.show(in: view)
         
         // Firebase Login
+        self.login(email: email, password: password)
+        guard self.loginStatus == true else{
+            return
+        }
+        self.navigationController?.dismiss(animated: true, completion: nil)
+    }
+    
+    func login(email : String, password : String) {
         FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: { [weak self] authResult, error in
             guard let strongSelf = self else{
                 return
@@ -149,6 +166,7 @@ class LoginViewController: UIViewController {
             
             guard let result = authResult, error == nil else{
                 print("Failed to log in user with email : \(email)")
+                self?.loginStatus = false
                 return
             }
             let user = result.user
@@ -172,8 +190,8 @@ class LoginViewController: UIViewController {
             UserDefaults.standard.set(email, forKey: "email")
             
             print("Logged In User: \(user)")
+            self?.loginStatus = true
 //            strongSelf.altertUserLoginSuccess()
-            strongSelf.navigationController?.dismiss(animated: true, completion: nil)
         })
     }
     
