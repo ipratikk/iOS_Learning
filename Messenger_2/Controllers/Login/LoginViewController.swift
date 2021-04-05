@@ -12,6 +12,8 @@ import JGProgressHUD
 
 
 protocol LoginService {
+    var email : String { get set }
+    var password : String { get set }
     var loginStatus : Bool { get set }
     func login(email : String, password : String)
     func altertUserLoginSuccess()
@@ -21,6 +23,8 @@ protocol LoginService {
 class LoginViewController: UIViewController, LoginService {
     
     var loginStatus: Bool = false
+    var email : String = ""
+    var password: String = ""
     
     private let spinner = JGProgressHUD(style: .dark)
     

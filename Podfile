@@ -2,8 +2,10 @@
 # platform :ios, '9.0'
 
 target 'Messenger_2' do
-   use_frameworks!
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
 
+  # Pods for Messenger_2
 pod 'Firebase/Analytics', '~> 6.33.0'
 pod 'Firebase/Core'
 pod 'Firebase/Auth'
@@ -21,5 +23,10 @@ pod 'SDWebImage'
 
 pod "RxSwift"
 pod "RxCocoa"
- 
+
+  target 'Messenger_2Tests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
 end
