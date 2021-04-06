@@ -9,7 +9,28 @@ import UIKit
 import FirebaseAuth
 import JGProgressHUD
 
-class RegisterViewController: UIViewController {
+protocol RegisterService {
+    var firstName : String { get set }
+    var lastName : String { get set }
+    var email : String { get set }
+    var password : String { get set }
+    var registerStatus : Bool { get set}
+    func register(firstName : String, lastName : String, email : String, password : String)
+    func altertUserRegisterError(message : String)
+    func alertUserRegisterSuccess()
+}
+
+class RegisterViewController: UIViewController, RegisterService {
+    
+    var firstName: String = ""
+    
+    var lastName: String = ""
+    
+    var email: String = ""
+    
+    var password: String = ""
+    
+    var registerStatus: Bool = false
     
     private let spinner = JGProgressHUD(style: .dark)
     
@@ -164,15 +185,26 @@ class RegisterViewController: UIViewController {
               !password.isEmpty,
               password.count >= 6
         else{
-            altertUserLoginError()
+            altertUserRegisterError()
             return
         }
         
         spinner.show(in: view)
         
-        // Firebase Login
+        // Firebase Register
+        self.register(firstName: firstName, lastName: lastName, email: email, password: password)
+        print("Returned from register")
+        print("Register Status - \(self.registerStatus)")
+        guard !registerStatus else {
+            print("Registered")
+            self.navigationController?.dismiss(animated: true, completion: nil)
+            return
+        }
+    }
+    
+    func register(firstName: String, lastName: String, email: String, password: String) {
+        
         DatabaseManager.shared.userExists(with: email, completion: { [weak self] exists in
-            
             print(exists)
             guard let strongSelf = self else {
                 return
@@ -182,13 +214,15 @@ class RegisterViewController: UIViewController {
                 strongSelf.spinner.dismiss()
             }
             guard !exists else{
-                strongSelf.altertUserLoginError(message: "Email id already in use")
+                strongSelf.altertUserRegisterError(message: "Email id already in use")
+                strongSelf.registerStatus = false
                 return
             }
             
             FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: {authResult, error in
                 guard authResult != nil, error == nil else{
-                    strongSelf.altertUserLoginError(message: "Cannot create user")
+                    strongSelf.altertUserRegisterError(message: "Cannot create user")
+                    strongSelf.registerStatus = false
                     return
                 }
                 
@@ -214,15 +248,22 @@ class RegisterViewController: UIViewController {
                                 print("Storage manager error : \(error)")
                             }
                         })
+                        strongSelf.registerStatus = true
                     }
                 })
-                
-                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+//                strongSelf.registerStatus = true
+//                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
             })
         })
     }
     
-    func altertUserLoginError(message : String = "Please enter all information to login"){
+    func alertUserRegisterSuccess() {
+        let alert = UIAlertController(title: "Yippee", message: "Registration Successful", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Continue", style: .cancel, handler: nil))
+        present(alert, animated: true)
+    }
+    
+    func altertUserRegisterError(message : String = "Please enter all information to login"){
         let alert = UIAlertController(title: "Woops", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
         present(alert, animated: true)

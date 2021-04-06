@@ -40,6 +40,18 @@ final class MockedLogin : LoginService {
     }
 }
 
+final class MockedChats : UIViewController, ChatsViewService  {
+    var isNewConversation: Bool = false
+    
+    var otherUserEmail: String = ""
+    
+    var conversationID: String? = ""
+    
+    func listenForMessages(id: String, shouldScrollToBottom: Bool) {
+        
+    }
+}
+
 class Messenger_2Tests: XCTestCase {
     private var loginService : LoginService!
     
