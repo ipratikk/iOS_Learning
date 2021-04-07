@@ -15,12 +15,13 @@ protocol RegisterService {
     var email : String { get set }
     var password : String { get set }
     var registerStatus : Bool { get set}
-    func register(firstName : String, lastName : String, email : String, password : String)
+    func register(firstName : String, lastName : String, email : String, password : String, completionHandler :  @escaping (Bool) -> Void)
     func altertUserRegisterError(message : String)
     func alertUserRegisterSuccess()
 }
 
 class RegisterViewController: UIViewController, RegisterService {
+    typealias CompletionHandler =  (Bool) -> Void
     
     var firstName: String = ""
     
@@ -192,18 +193,21 @@ class RegisterViewController: UIViewController, RegisterService {
         spinner.show(in: view)
         
         // Firebase Register
-        self.register(firstName: firstName, lastName: lastName, email: email, password: password)
-        print("Returned from register")
-        print("Register Status - \(self.registerStatus)")
-        guard !registerStatus else {
-            print("Registered")
-            self.navigationController?.dismiss(animated: true, completion: nil)
-            return
-        }
+        self.register(firstName: firstName, lastName: lastName, email: email, password: password, completionHandler: { success in
+            print("Returned from register")
+            print("Register Status - \(success)")
+            if success {
+                print("Registered")
+                self.navigationController?.dismiss(animated: true, completion: nil)
+            }
+        })
     }
     
-    func register(firstName: String, lastName: String, email: String, password: String) {
+    func register(firstName: String, lastName: String, email: String, password: String, completionHandler : @escaping CompletionHandler) {
+        let group = DispatchGroup()
+        var flag : Bool = false
         
+        group.enter()
         DatabaseManager.shared.userExists(with: email, completion: { [weak self] exists in
             print(exists)
             guard let strongSelf = self else {
@@ -215,14 +219,15 @@ class RegisterViewController: UIViewController, RegisterService {
             }
             guard !exists else{
                 strongSelf.altertUserRegisterError(message: "Email id already in use")
-                strongSelf.registerStatus = false
+                flag = false
                 return
             }
             
+            group.enter()
             FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: {authResult, error in
                 guard authResult != nil, error == nil else{
                     strongSelf.altertUserRegisterError(message: "Cannot create user")
-                    strongSelf.registerStatus = false
+                    flag = false
                     return
                 }
                 
@@ -231,6 +236,7 @@ class RegisterViewController: UIViewController, RegisterService {
                 
                 let chatUser = ChatAppUser(firstName: firstName, lastName: lastName, emailAddress: email)
                 
+                group.enter()
                 DatabaseManager.shared.insertUser(with: chatUser, completion: {success in
                     if success{
                         //upload image
@@ -239,6 +245,7 @@ class RegisterViewController: UIViewController, RegisterService {
                             return
                         }
                         let fileName = chatUser.profilePictureFileName
+                        group.enter()
                         StorageManager.shared.uploadProfilePicture(with: data, fileName: fileName, completion: { result in
                             switch result {
                             case .success(let downloadURL):
@@ -247,14 +254,21 @@ class RegisterViewController: UIViewController, RegisterService {
                             case .failure(let error):
                                 print("Storage manager error : \(error)")
                             }
+                            group.leave()
                         })
-                        strongSelf.registerStatus = true
+                        flag = true
                     }
+                    group.leave()
                 })
-//                strongSelf.registerStatus = true
 //                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+                group.leave()
             })
+            group.leave()
         })
+        group.notify(queue: .main){
+            completionHandler(flag)
+            return
+        }
     }
     
     func alertUserRegisterSuccess() {
