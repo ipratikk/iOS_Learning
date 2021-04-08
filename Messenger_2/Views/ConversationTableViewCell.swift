@@ -14,6 +14,8 @@ class ConversationTableViewCell: UITableViewCell {
     
     private let userImageView : UIImageView = {
         let imageView = UIImageView()
+        imageView.image = UIImage(systemName:"person.circle")?.withTintColor(.gray,
+                                                                             renderingMode: .alwaysOriginal)
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 50
         imageView.layer.masksToBounds = true
