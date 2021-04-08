@@ -14,15 +14,14 @@ import JGProgressHUD
 protocol LoginService {
     var email : String { get set }
     var password : String { get set }
-    var loginStatus : Bool { get set }
-    func login(email : String, password : String)
-    func altertUserLoginSuccess()
+    func login(email : String, password : String, completionHandler : @escaping (Bool) -> Void)
+    func altertUserLoginSuccess(completion : @escaping (Bool) -> Void)
     func altertUserLoginError()
 }
 
 class LoginViewController: UIViewController, LoginService {
+    typealias CompletionHandler =  (Bool) -> Void
     
-    var loginStatus: Bool = false
     var email : String = ""
     var password: String = ""
     
@@ -151,14 +150,18 @@ class LoginViewController: UIViewController, LoginService {
         spinner.show(in: view)
         
         // Firebase Login
-        self.login(email: email, password: password)
-        guard self.loginStatus == true else{
-            return
+        self.login(email: email, password: password){ success in
+            guard success == true else{
+                return
+            }
+            self.navigationController?.dismiss(animated: true, completion: nil)
         }
-        self.navigationController?.dismiss(animated: true, completion: nil)
     }
     
-    func login(email : String, password : String) {
+    func login(email : String, password : String ,  completionHandler : @escaping CompletionHandler) {
+        let group = DispatchGroup()
+        
+        group.enter()
         FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: { [weak self] authResult, error in
             guard let strongSelf = self else{
                 return
@@ -170,12 +173,13 @@ class LoginViewController: UIViewController, LoginService {
             
             guard let result = authResult, error == nil else{
                 print("Failed to log in user with email : \(email)")
-                self?.loginStatus = false
+                completionHandler(false)
                 return
             }
             let user = result.user
             
             let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
+            group.enter()
             DatabaseManager.shared.getDataFor(path: safeEmail, completion: { result in
                 switch result {
                 case .success(let data):
@@ -189,13 +193,16 @@ class LoginViewController: UIViewController, LoginService {
                 case .failure(let error):
                     print("Failed to read data with error \(error)")
                 }
+                group.leave()
             })
             
             UserDefaults.standard.set(email, forKey: "email")
             
             print("Logged In User: \(user)")
-            self?.loginStatus = true
-//            strongSelf.altertUserLoginSuccess()
+            strongSelf.altertUserLoginSuccess(){ success in
+                completionHandler(true)
+                group.leave()
+            }
         })
     }
     
@@ -207,9 +214,11 @@ class LoginViewController: UIViewController, LoginService {
     }
     
     
-    func altertUserLoginSuccess(){
+    func altertUserLoginSuccess(completion : @escaping (Bool) -> Void){
         let alert = UIAlertController(title: "Yipee", message: "Login Successful", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Okay", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Okay", style: .cancel, handler: {action in
+            completion(true)
+        }))
         present(alert, animated: true)
     }
     

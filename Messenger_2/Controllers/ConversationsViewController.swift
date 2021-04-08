@@ -16,7 +16,7 @@ final class ConversationsViewController: UIViewController{
     private var conversations = [Conversation]()
     
     private let chatsService : ChatsViewService = ChatViewController(with: "", id: "")
-        
+         
     private let tableView: UITableView = {
         let table = UITableView()
         table.isHidden = true
