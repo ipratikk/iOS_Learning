@@ -158,7 +158,7 @@ extension NewConversationViewController : UISearchBarDelegate{
             }
             
             return SearchResult(name: name, email: email)
-        })
+        })  
         
         self.results = results
         
