@@ -34,6 +34,8 @@
 		F98BA0FD25F0ED8900508899 /* NewConversationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F98BA0FC25F0ED8900508899 /* NewConversationCell.swift */; };
 		F9A7C0E225E60F05005D7AEE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F9A7C0E125E60F05005D7AEE /* GoogleService-Info.plist */; };
 		F9A7C0F425E64181005D7AEE /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A7C0F325E64181005D7AEE /* DatabaseManager.swift */; };
+		F9E72086262034DD00B535B5 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9E72085262034DD00B535B5 /* User.swift */; };
+		F9E7208A262034FA00B535B5 /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9E72089262034FA00B535B5 /* UserViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -82,6 +84,8 @@
 		F98BA0FC25F0ED8900508899 /* NewConversationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewConversationCell.swift; sourceTree = "<group>"; };
 		F9A7C0E125E60F05005D7AEE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		F9A7C0F325E64181005D7AEE /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
+		F9E72085262034DD00B535B5 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		F9E72089262034FA00B535B5 /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,6 +163,7 @@
 		F97B5F6A25E3D5F200AB559F /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				F9E72089262034FA00B535B5 /* UserViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -170,6 +175,7 @@
 				F98BA0F325F0EC5E00508899 /* ConversationsModels.swift */,
 				F98BA0F625F0EC7A00508899 /* ProfileViewModel.swift */,
 				F98BA0F925F0EC9000508899 /* SearchResult.swift */,
+				F9E72085262034DD00B535B5 /* User.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -436,6 +442,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F97B5F7325E3D76700AB559F /* LoginViewController.swift in Sources */,
+				F9E7208A262034FA00B535B5 /* UserViewModel.swift in Sources */,
 				F98BA0FD25F0ED8900508899 /* NewConversationCell.swift in Sources */,
 				F9A7C0F425E64181005D7AEE /* DatabaseManager.swift in Sources */,
 				F97B5F7625E3D77000AB559F /* RegisterViewController.swift in Sources */,
@@ -455,6 +462,7 @@
 				F91C37EE25EF85640073A3AB /* ConversationTableViewCell.swift in Sources */,
 				F98BA0F425F0EC5E00508899 /* ConversationsModels.swift in Sources */,
 				F98BA0F125F0EC1400508899 /* ChatModels.swift in Sources */,
+				F9E72086262034DD00B535B5 /* User.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

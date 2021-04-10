@@ -62,7 +62,7 @@ class NewConversationCell: UITableViewCell {
                                      height: 20)
     }
 
-    public func configure(with model: SearchResult) {
+    public func configure(with model: UserViewModel) {
         userNameLabel.text = model.name
         userEmailLabel.text = DatabaseManager.decodeEmail(emailAddress: model.email)
 

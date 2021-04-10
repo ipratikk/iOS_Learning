@@ -7,6 +7,8 @@
 
 import UIKit
 import JGProgressHUD
+import RxSwift
+import RxCocoa
 
 class NewConversationViewController: UIViewController {
     
@@ -14,10 +16,12 @@ class NewConversationViewController: UIViewController {
     
     private let spinner = JGProgressHUD(style: .dark)
     
-    private var users = [[String : String]]()
+    private var users = [User]()
     private var results = [SearchResult]()
     
     private var hasFetched = false
+    
+    private let disposeBag = DisposeBag()
     
     private let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
@@ -27,7 +31,7 @@ class NewConversationViewController: UIViewController {
     
     private let tableView: UITableView = {
         let table = UITableView()
-        table.isHidden = true
+//        table.isHidden = true
         table.register(NewConversationCell.self,
                        forCellReuseIdentifier: NewConversationCell.identifier)
         return table
@@ -47,14 +51,38 @@ class NewConversationViewController: UIViewController {
         view.addSubview(noResultsLabel)
         view.addSubview(tableView)
         
-        tableView.delegate = self
-        tableView.dataSource = self
+        tableView.rx.setDelegate(self).disposed(by: disposeBag)
         
         searchBar.delegate = self
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.topItem?.titleView = searchBar
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Cancel", style: .done, target: self, action: #selector(dismissSelf))
+        
+        getAllUsers(with: "users") { result in
+            switch result {
+            case .success(let userList):
+                self.users = userList
+            case .failure(let error):
+                print("Error : \(error)")
+            }
+        }
         searchBar.becomeFirstResponder()
+        
+        searchBar.rx.text.orEmpty
+            .throttle(.milliseconds(300), scheduler: MainScheduler.instance)
+            .distinctUntilChanged()
+            .flatMapLatest { query -> Observable<[UserViewModel]> in
+                if (query.isEmpty) {
+                    return self.convertModel(with: self.users)
+                }
+                else{
+                    return self.filterUsers(with: query, array: self.users).observe(on: MainScheduler.instance)
+                }
+                //            }
+            }.bind(to: tableView.rx.items(cellIdentifier: NewConversationCell.identifier, cellType: NewConversationCell.self)) {
+                (index,item,cell) in
+                cell.configure(with: item)
+            }.disposed(by: disposeBag)
     }
     
     override func viewDidLayoutSubviews() {
@@ -68,102 +96,91 @@ class NewConversationViewController: UIViewController {
     }
 }
 
-extension NewConversationViewController : UITableViewDelegate, UITableViewDataSource{
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return results.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let model = results[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: NewConversationCell.identifier,
-                                                 for: indexPath) as! NewConversationCell
-        cell.configure(with: model)
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        // start conversation
-        let targetUserData = results[indexPath.row]
-        
-        dismiss(animated: true, completion: { [weak self] in
-            self?.completion?(targetUserData)
-        })
-    }
-    
+extension NewConversationViewController : UITableViewDelegate{
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 90
+        return 100
     }
     
 }
 
-extension NewConversationViewController : UISearchBarDelegate{
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        guard let text = searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty else{
-            return
+extension NewConversationViewController : UISearchBarDelegate {
+    public func convertModel(with data : [User]) -> Observable<[UserViewModel]> {
+        return Observable.just(data).map{
+            $0.map{
+                UserViewModel(user: $0)
+            }
         }
-        
-        searchBar.resignFirstResponder()
-        
-        results.removeAll()
-        spinner.show(in: view)
-        searchUsers(query: text)
     }
     
-    func searchUsers(query : String){
-        
-        //        check if array has firebase results
-        if hasFetched{
-            filterUsers(with: query)
+    public func getAllUsers(with query : String, completion : @escaping (Result<[User],Error>) -> Void) {
+        guard var currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+            return
         }
-        else{
-            DatabaseManager.shared.getAllUsers(completion: { [weak self] result in
-                switch result{
-                case .success(let usersCollection):
-                    self?.hasFetched = true
-                    self?.users = usersCollection
-                    self?.filterUsers(with: query)
-                case .failure(let error):
-                    print("Failed to get users : \(error)")
+        currentUserEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
+        DatabaseManager.shared.getDataFor(path: query){ result in
+            switch result {
+            case .failure(let error):
+                completion(.failure(error))
+            case .success(let value):
+                do {
+                    let data = try JSONSerialization.data(withJSONObject: value, options: [])
+                    let model = try JSONDecoder().decode([User].self, from: data).filter { $0.email != currentUserEmail }
+                    completion(.success(model))
+                }catch let error {
+                    print(error)
                 }
-            })
+            }
         }
     }
     
-    func filterUsers(with term: String) {
-        // update the UI: eitehr show results or show no results label
-        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String, hasFetched else {
-            return
+    public func filterUsers(with query : String, array : [User]) -> Observable<[UserViewModel]> {
+        
+        guard var currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+            return convertModel(with: array)
         }
         
-        let safeEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
+        currentUserEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
         
-        self.spinner.dismiss()
-        
-        let results: [SearchResult] = users.filter({
-            guard let email = $0["email"], email != safeEmail else {
-                return false
-            }
-            
-            guard let name = $0["name"]?.lowercased() else {
-                return false
-            }
-            
-            return name.hasPrefix(term.lowercased())
-        }).compactMap({
-            
-            guard let email = $0["email"],
-                  let name = $0["name"] else {
-                return nil
-            }
-            
-            return SearchResult(name: name, email: email)
-        })  
-        
-        self.results = results
-        
-        updateUI()
+        let seq = array.filter{
+            $0.name.lowercased().contains(query.lowercased()) && $0.email != currentUserEmail
+        }
+        return convertModel(with: seq)
     }
+    
+//    func filterUsers(with term: String) {
+//        // update the UI: eitehr show results or show no results label
+//        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String, hasFetched else {
+//            return
+//        }
+//
+//        let safeEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
+//
+//        self.spinner.dismiss()
+//
+//        let results: [SearchResult] = users.filter({
+//            guard let email = $0["email"], email != safeEmail else {
+//                return false
+//            }
+//
+//            guard let name = $0["name"]?.lowercased() else {
+//                return false
+//            }
+//
+//            return name.hasPrefix(term.lowercased())
+//        }).compactMap({
+//
+//            guard let email = $0["email"],
+//                  let name = $0["name"] else {
+//                return nil
+//            }
+//
+//            return SearchResult(name: name, email: email)
+//        })
+//
+//        self.results = results
+//
+//        updateUI()
+//    }
     
     func updateUI() {
         if results.isEmpty {
