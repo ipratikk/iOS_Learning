@@ -11,27 +11,26 @@ import XCTest
 final class MockedLogin : LoginService {
     var email: String
     var password: String
-    var loginStatus: Bool = false
     
     init(email : String, password : String) {
         self.email = email
         self.password = password
     }
     
-    func login(email: String, password: String) {
+    func login(email: String, password: String, completionHandler: @escaping (Bool) -> Void) {
         guard email == "", password == "" else {
-            self.loginStatus = true
-            return
-        }
-        guard loginStatus == false else {
-            self.altertUserLoginSuccess()
+            self.altertUserLoginSuccess(){ success in
+                completionHandler(true)
+                return
+            }
             return
         }
         self.altertUserLoginError()
+        completionHandler(false)
         return
     }
     
-    func altertUserLoginSuccess() {
+    func altertUserLoginSuccess(completion: @escaping (Bool) -> Void) {
         print("Login Success")
     }
     
@@ -57,11 +56,12 @@ class Messenger_2Tests: XCTestCase {
     
     func testLogin(){
         let service1 = MockedLogin(email: "pratik@gmail.com", password: "1234")
-        service1.login(email: service1.email, password: service1.password)
-        XCTAssertTrue(service1.loginStatus)
+        service1.login(email: service1.email, password: service1.password) { status in
+            XCTAssertTrue(status)
+        }
         let service2 = MockedLogin(email: "", password: "")
-        service1.login(email: service2.email, password: service1.password)
-        XCTAssertFalse(service2.loginStatus)
-        
+        service1.login(email: service2.email, password: service1.password) { status in
+            XCTAssertFalse(status)
+        }
     }
 }
