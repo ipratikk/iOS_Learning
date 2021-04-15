@@ -1,4 +1,4 @@
 os: osx
 osx_image: xcode12.2
 language: swift
-script: xcodebuild clean build test -workspace Messenger_2.xcworkspace/ -scheme "Messenger_2" -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO CODE_SIGNING_REQUIRED=NO
+script: xcodebuild clean build test -quiet -workspace Messenger_2.xcworkspace/ -scheme "Messenger_2" -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO CODE_SIGNING_REQUIRED=NO
