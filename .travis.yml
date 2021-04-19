@@ -1,10 +1,23 @@
-#os: osx
-#osx_image: xcode12.2
-#language: swift
-#script: xcodebuild clean build test -quiet -workspace Messenger_2.xcworkspace/ -scheme "Messenger_2" -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 11,OS=13.0" ONLY_ACTIVE_ARCH=NO CODE_SIGNING_REQUIRED=NOl
+# Travis CI config for AppAuth
+# Use the `wwtd` gem to test locally.
+language: objective-c
 
-language : swift
-osx_image : xcode12.2
-xcode_workspace : Messenger_2.xcworkspace
-xcode_scheme : Messenger_2
-xcode_destination : platform=iOS Simulator,OS=14.2,name=iPhone 11,SDK=iphonesimulator14.2
+jobs:
+  include:
+    - osx_image: xcode12.2
+      # Tests iOS, macOS and tvOS: both static library and framework schemes.
+      env: 
+      # To generate this list, use `xcodebuild -showsdks` to get possible SDK values, and platforms.
+      # Use `instruments -s devices` to get the device name.
+        - SCHEME=Messenger_2-iOS DESTINATION="'platform=iOS Simulator,name=iPhone 11,OS=14.2'" SDK=iphonesimulator14.2
+      before_script:
+        - sudo gem install xcpretty
+      script:
+      # Breaking down this command:
+      # eval is used here, otherwise environment variables are not present.
+      # `set -o pipefail && ` is so that the return code isn't gobbled by xcpretty (per https://github.com/supermarin/xcpretty#usage)
+      # then it's standard xcodebuild | xcpretty.
+        - eval "set -o pipefail && xcodebuild -workspace Messenger_2.xcworkspace -scheme $SCHEME -sdk $SDK -destination $DESTINATION -enableCodeCoverage YES GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=YES OTHERCFLAGS='-Werror' test | xcpretty"
+      after_success:
+        - echo "Build Success"
+
