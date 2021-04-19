@@ -7,4 +7,4 @@ language : swift
 osx_image : xcode12.2
 xcode_workspace : Messenger_2.xcworkspace
 xcode_scheme : Messenger_2
-xcode_destination : platform=iOS Simulator,OS=14.2,name=iPhone 11
+xcode_destination : platform=iOS Simulator,OS=14.2,name=iPhone 11,SDK=iphonesimulator14.2
