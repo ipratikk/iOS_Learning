@@ -9,7 +9,7 @@ jobs:
       env: 
       # To generate this list, use `xcodebuild -showsdks` to get possible SDK values, and platforms.
       # Use `instruments -s devices` to get the device name.
-        - SCHEME=Messenger_2 DESTINATION="'platform=iOS Simulator,name=iPhone 11,OS=14.0'" SDK=iphonesimulator14.2
+        - SCHEME=Messenger_2 DESTINATION="'platform=iOS Simulator,name=iPhone 11,OS=13.0'" SDK=iphonesimulator13.0
       before_script:
         - sudo gem install xcpretty
       script:
